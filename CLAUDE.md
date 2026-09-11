@@ -30,27 +30,43 @@ Access via the Socrata REST API: `https://data.cityofnewyork.us/resource/<datase
 - **Styling:** Tailwind CSS v4.
 - **Icons:** lucide-react (real icon set, not emoji or placeholders).
 - **Animation:** Framer Motion, used with restraint (entrance fades/slides, hover states), not as decoration for its own sake.
-- **Map:** MapLibre GL JS with OSM/CARTO basemap tiles. No API key required, so any open-source contributor can run the project without a paid map signup.
-- **Charts:** to be decided in Phase 4 (candidates: Observable Plot, Recharts, visx).
-- **Data layer:** ETL scripts fetch and normalize the two datasets into precomputed aggregate JSON (by location, year, hour). Prefer static-at-build data over a live database, to keep the open-source deploy simple and free to run.
+- **Map:** MapLibre GL JS with CARTO basemap tiles (positron for light, dark matter for dark). No API key required, so any open-source contributor can run the project without a paid map signup.
+- **Charts:** a small hand built SVG bar chart component (`src/components/dashboard/HourlyChart.tsx`), not a charting library. Decided in Phase 4 to keep the bundle light and the styling fully under control for a single, simple chart type.
+- **Data layer:** ETL scripts (`scripts/etl`, `scripts/analysis`, `scripts/build-data.ts`) fetch, normalize, match, and analyze the two datasets into precomputed JSON under `public/data`. Read server side by `src/lib/data.ts`. No API routes or database, to keep the open-source deploy simple and free to run.
+- **Testing:** Vitest, for the ETL and analysis logic specifically (`scripts/**/*.test.ts`). That code is the actual point of the project and the part most worth trusting.
 
 ## Conventions
 
 - TypeScript strict mode. No implicit `any`.
-- Keep ETL (fetching and aggregation) separate from presentation (React components). ETL lives in `/scripts` or `/etl`, and outputs plain JSON consumed by the app.
+- Keep ETL (fetching and aggregation) separate from presentation (React components). ETL and analysis live in `/scripts`, and output plain JSON under `public/data` consumed by the app.
 - Comment only on non-obvious reasoning (dataset quirks, schema mismatches between the two datasets), not on what the code does.
 - Don't add abstractions, error handling, or config beyond what the current phase needs.
-- **Writing style, everywhere (UI copy, docs, commit messages, comments):** write in plain human terms, like one person explaining something to another. No em dashes, use commas, periods, or parentheses instead. Avoid AI-marketing language ("unlock," "leverage," "seamless," "robust," "cutting-edge," "delve"). Say what's true plainly, including admitting when something is a placeholder or not built yet.
+- **Writing style, everywhere (UI copy, docs, commit messages, comments):** write in plain human terms, like one person explaining something to another. No em dashes, ever, in code, docs, comments, commit messages, or UI copy. Use commas, periods, or parentheses instead. Avoid AI-marketing language ("unlock," "leverage," "seamless," "robust," "cutting-edge," "delve"). Say what's true plainly, including admitting when something is a placeholder or not built yet.
+
+## Location matching
+
+Locations are matched across the two datasets primarily by segment id (`scripts/analysis/match-locations.ts`). When segment id is missing, which is common in the historical dataset, it falls back to a key built from street name, cross streets, and direction. That fallback is a heuristic: two different real world references to the same corner will not match if they're worded differently. Documented as an open risk in PLAN.md.
+
+The historical dataset does not include coordinates at all. A location that only ever shows up there (no matching automated segment id) has no lat/long, is not plotted on the map, but is still counted in the coverage stats. Resolving that for real would mean joining segment id against a street centerline dataset (for example NYC's LION dataset), which is out of scope for this build.
+
+## Sample data
+
+Since `data.cityofnewyork.us` is unreachable from the sandbox this project was built in, `scripts/etl/generate-sample-data.ts` produces synthetic data matching both real dataset schemas exactly, so the pipeline and dashboard can be built, tested, and demoed honestly. It's deterministic (seeded random), clearly labeled `synthetic: true` in the raw file metadata, and that flag flows through `scripts/build-data.ts` into `summary.json` as `meta.sample`, which is what the dashboard reads to show its sample data banner. Never remove that banner logic without actually wiring up real data first.
 
 ## Running things
 
 ```bash
 npm install
-npm run dev            # local dev server at http://localhost:3000
-npm run build           # production build
-npm run lint            # eslint
-npm run format           # prettier, writes changes
-npm run format:check    # prettier, check only
+npm run etl:sample      # generate synthetic sample data
+npm run etl:fetch        # or: pull real data (needs network access to data.cityofnewyork.us)
+npm run etl:build       # turn raw data into what the app reads
+npm run dev              # local dev server at http://localhost:3000
+npm run build            # production build
+npm run lint              # eslint
+npm run format             # prettier, writes changes
+npm run format:check      # prettier, check only
+npm run typecheck          # tsc --noEmit
+npm test                    # vitest
 ```
 
 <!-- BEGIN:nextjs-agent-rules -->
