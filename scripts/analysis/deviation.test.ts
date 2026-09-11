@@ -26,9 +26,7 @@ describe("computeCitywideExpectedPeakHours", () => {
 
 describe("findPeakAndTrough", () => {
   it("picks out the busiest and quietest hour", () => {
-    const { peakHour, troughHour } = findPeakAndTrough(
-      flatProfileWithPeak(3),
-    );
+    const { peakHour, troughHour } = findPeakAndTrough(flatProfileWithPeak(3));
     expect(peakHour).toBe(3);
     expect(troughHour).toBeGreaterThanOrEqual(0);
   });

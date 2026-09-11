@@ -16,12 +16,7 @@ import { fetchAllRecords } from "./socrata-client";
 import type { RawAutomatedRecord, RawFile } from "./raw-types";
 
 const DATASET_ID = "7ym2-wayt";
-const OUT_PATH = path.join(
-  process.cwd(),
-  "data",
-  "raw",
-  "automated.raw.json",
-);
+const OUT_PATH = path.join(process.cwd(), "data", "raw", "automated.raw.json");
 
 async function main() {
   console.log(`Fetching dataset ${DATASET_ID} from Socrata...`);

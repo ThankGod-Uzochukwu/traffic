@@ -1,4 +1,9 @@
-import type { Borough, DataSource, HourlyVolume, NormalizedCount } from "../../src/lib/types";
+import type {
+  Borough,
+  DataSource,
+  HourlyVolume,
+  NormalizedCount,
+} from "../../src/lib/types";
 
 export type LocationDraft = {
   id: string;

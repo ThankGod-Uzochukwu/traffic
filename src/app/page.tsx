@@ -1,7 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Clock, MapPinned, Radio } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, Clock, MapPinned, Radio } from "lucide-react";
 import { Header } from "@/components/Header";
 import { InsightCard } from "@/components/InsightCard";
 import { Footer } from "@/components/Footer";
@@ -18,7 +19,7 @@ export default function Home() {
             transition={{ duration: 0.4 }}
             className="inline-flex items-center rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted"
           >
-            Early build, real data coming next
+            Now with a working dashboard, still running on sample data
           </motion.span>
 
           <motion.h1
@@ -42,6 +43,21 @@ export default function Home() {
             gap and looks at what it means for rush hour in the places that get
             missed.
           </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="mt-8"
+          >
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-white transition-transform hover:scale-105"
+            >
+              View the dashboard
+              <ArrowRight size={16} />
+            </Link>
+          </motion.div>
         </section>
 
         <section className="mx-auto max-w-5xl px-6 pb-24">
@@ -76,9 +92,10 @@ export default function Home() {
             className="rounded-2xl border border-dashed border-border bg-card/50 p-8 text-center"
           >
             <p className="text-sm text-muted">
-              This is the first build of the project. The map, the real traffic
-              counts, and the coverage numbers are being built next. Check
-              TODO.md in the repo to see where things stand.
+              The dashboard is running on sample data right now, generated to
+              match the real NYC datasets, since this build could not reach
+              data.cityofnewyork.us to pull the real thing. See README.md for
+              how to swap in real data once you have access.
             </p>
           </motion.div>
         </section>

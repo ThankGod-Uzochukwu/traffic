@@ -1,9 +1,5 @@
 export type Borough =
-  | "Manhattan"
-  | "Brooklyn"
-  | "Queens"
-  | "Bronx"
-  | "Staten Island";
+  "Manhattan" | "Brooklyn" | "Queens" | "Bronx" | "Staten Island";
 
 export type DataSource = "historical" | "automated";
 

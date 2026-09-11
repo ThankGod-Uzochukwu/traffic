@@ -22,7 +22,9 @@ function parseBorough(value: string | undefined): Borough | null {
 }
 
 // The automated dataset stores location as WKT, e.g. "POINT (-73.98 40.75)".
-function parseWktPoint(wkt: string | undefined): { lat: number; lon: number } | null {
+function parseWktPoint(
+  wkt: string | undefined,
+): { lat: number; lon: number } | null {
   if (!wkt) return null;
   const match = /POINT\s*\(\s*(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)\s*\)/i.exec(
     wkt,

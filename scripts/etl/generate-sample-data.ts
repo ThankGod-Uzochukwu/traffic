@@ -63,29 +63,77 @@ const BOROUGHS: BoroughBounds[] = [
     name: "Brooklyn",
     lat: [40.57, 40.74],
     lon: [-74.04, -73.83],
-    streets: ["Flatbush Ave", "Atlantic Ave", "Bedford Ave", "4 Ave", "Court St"],
-    crossStreets: ["Fulton St", "Church Ave", "Eastern Pkwy", "86 St", "Myrtle Ave"],
+    streets: [
+      "Flatbush Ave",
+      "Atlantic Ave",
+      "Bedford Ave",
+      "4 Ave",
+      "Court St",
+    ],
+    crossStreets: [
+      "Fulton St",
+      "Church Ave",
+      "Eastern Pkwy",
+      "86 St",
+      "Myrtle Ave",
+    ],
   },
   {
     name: "Queens",
     lat: [40.54, 40.8],
     lon: [-73.96, -73.7],
-    streets: ["Queens Blvd", "Northern Blvd", "Woodhaven Blvd", "Astoria Blvd", "Main St"],
-    crossStreets: ["Roosevelt Ave", "Jamaica Ave", "Union Tpke", "Hillside Ave", "21 St"],
+    streets: [
+      "Queens Blvd",
+      "Northern Blvd",
+      "Woodhaven Blvd",
+      "Astoria Blvd",
+      "Main St",
+    ],
+    crossStreets: [
+      "Roosevelt Ave",
+      "Jamaica Ave",
+      "Union Tpke",
+      "Hillside Ave",
+      "21 St",
+    ],
   },
   {
     name: "Bronx",
     lat: [40.8, 40.92],
     lon: [-73.93, -73.77],
-    streets: ["Grand Concourse", "Fordham Rd", "Bruckner Blvd", "White Plains Rd", "3 Ave"],
-    crossStreets: ["149 St", "Tremont Ave", "Gun Hill Rd", "E 161 St", "Westchester Ave"],
+    streets: [
+      "Grand Concourse",
+      "Fordham Rd",
+      "Bruckner Blvd",
+      "White Plains Rd",
+      "3 Ave",
+    ],
+    crossStreets: [
+      "149 St",
+      "Tremont Ave",
+      "Gun Hill Rd",
+      "E 161 St",
+      "Westchester Ave",
+    ],
   },
   {
     name: "Staten Island",
     lat: [40.49, 40.65],
     lon: [-74.25, -74.05],
-    streets: ["Hylan Blvd", "Richmond Ave", "Victory Blvd", "Forest Ave", "Amboy Rd"],
-    crossStreets: ["Bay St", "Clove Rd", "Slosson Ave", "New Dorp Ln", "Page Ave"],
+    streets: [
+      "Hylan Blvd",
+      "Richmond Ave",
+      "Victory Blvd",
+      "Forest Ave",
+      "Amboy Rd",
+    ],
+    crossStreets: [
+      "Bay St",
+      "Clove Rd",
+      "Slosson Ave",
+      "New Dorp Ln",
+      "Page Ave",
+    ],
   },
 ];
 
@@ -96,10 +144,7 @@ type PatternType = "commute" | "overnight" | "midday" | "flat";
 // A simple bell curve centered on `center`, wrapped around the 24 hour
 // clock so a center near midnight still produces a sensible bump.
 function bell(hour: number, center: number, width: number, amplitude: number) {
-  const diff = Math.min(
-    Math.abs(hour - center),
-    24 - Math.abs(hour - center),
-  );
+  const diff = Math.min(Math.abs(hour - center), 24 - Math.abs(hour - center));
   return amplitude * Math.exp(-(diff * diff) / (2 * width * width));
 }
 
@@ -255,10 +300,7 @@ async function main() {
   // Annual: counted for a two week window in several different years.
   for (let i = 0; i < 25; i++) {
     const site = generateSite();
-    const years = [2016, 2019, 2022].slice(
-      0,
-      2 + Math.floor(random() * 2),
-    );
+    const years = [2016, 2019, 2022].slice(0, 2 + Math.floor(random() * 2));
     for (const year of years) {
       const start = `${year}-${pad(3 + Math.floor(random() * 6), 2)}-01`;
       for (const date of historicalVisitDays(start, 14)) {

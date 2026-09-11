@@ -9,7 +9,11 @@
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { normalizeAutomated, normalizeHistorical } from "./etl/normalize";
-import type { RawAutomatedRecord, RawFile, RawHistoricalRecord } from "./etl/raw-types";
+import type {
+  RawAutomatedRecord,
+  RawFile,
+  RawHistoricalRecord,
+} from "./etl/raw-types";
 import { matchLocations } from "./analysis/match-locations";
 import { classifyCoverage } from "./analysis/coverage";
 import {
@@ -38,9 +42,8 @@ async function main() {
   const historicalFile = await readRawFile<RawHistoricalRecord>(
     "historical.raw.json",
   );
-  const automatedFile = await readRawFile<RawAutomatedRecord>(
-    "automated.raw.json",
-  );
+  const automatedFile =
+    await readRawFile<RawAutomatedRecord>("automated.raw.json");
 
   if (!historicalFile && !automatedFile) {
     console.error(

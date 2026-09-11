@@ -12,12 +12,7 @@ import { fetchAllRecords } from "./socrata-client";
 import type { RawFile, RawHistoricalRecord } from "./raw-types";
 
 const DATASET_ID = "btm5-ppia";
-const OUT_PATH = path.join(
-  process.cwd(),
-  "data",
-  "raw",
-  "historical.raw.json",
-);
+const OUT_PATH = path.join(process.cwd(), "data", "raw", "historical.raw.json");
 
 async function main() {
   console.log(`Fetching dataset ${DATASET_ID} from Socrata...`);
