@@ -50,7 +50,8 @@ Live task tracker for NYC Traffic Watch. Check items off as completed, and keep 
 ## Phase 5: Polish, docs, deploy
 
 - [x] README: setup, ETL usage, data attribution
-- [ ] Choose and configure a deploy target (Vercel or GitHub Pages): left for the project owner, since deploying requires an account this session does not have
+- [x] Deploy target chosen and wired up: Vercel, via `.github/workflows/cd.yml` (`npm run build` uses whatever is already committed in `public/data`, no ETL re-run on deploy)
+- [ ] Set `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` as repo secrets so `cd.yml` actually deploys instead of skipping (needs a Vercel account, left for the project owner)
 - [x] Tests: ETL normalization, matching, coverage classification, deviation-score calculation
 
 ## Phase 6: Open-source readiness
