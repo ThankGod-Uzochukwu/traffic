@@ -34,7 +34,10 @@ export default async function DashboardPage() {
 
           {summary.meta.sample && (
             <div className="mt-5">
-              <SampleDataBanner />
+              <SampleDataBanner
+                historicalSource={summary.meta.historicalSource}
+                automatedSource={summary.meta.automatedSource}
+              />
             </div>
           )}
 

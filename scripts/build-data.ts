@@ -22,7 +22,17 @@ import {
   computeDeviationScore,
   findPeakAndTrough,
 } from "./analysis/deviation";
-import type { CoverageClass, Location, Summary } from "../src/lib/types";
+import type {
+  CoverageClass,
+  Location,
+  SourceStatus,
+  Summary,
+} from "../src/lib/types";
+
+function sourceStatus(file: RawFile<unknown> | null): SourceStatus {
+  if (!file) return "missing";
+  return file.meta.synthetic ? "synthetic" : "real";
+}
 
 const RAW_DIR = path.join(process.cwd(), "data", "raw");
 const OUT_DIR = path.join(process.cwd(), "public", "data");
@@ -55,9 +65,10 @@ async function main() {
     return;
   }
 
-  const isSample = Boolean(
-    historicalFile?.meta.synthetic ?? automatedFile?.meta.synthetic,
-  );
+  const historicalSource = sourceStatus(historicalFile);
+  const automatedSource = sourceStatus(automatedFile);
+  const isSample =
+    historicalSource === "synthetic" || automatedSource === "synthetic";
 
   const normalizedHistorical = historicalFile
     ? normalizeHistorical(historicalFile.records)
@@ -105,7 +116,12 @@ async function main() {
     .map((l) => l.id);
 
   const summary: Summary = {
-    meta: { sample: isSample, generatedAt: new Date().toISOString() },
+    meta: {
+      sample: isSample,
+      generatedAt: new Date().toISOString(),
+      historicalSource,
+      automatedSource,
+    },
     totalLocations: locations.length,
     locationsWithCoordinates: locations.filter(
       (l) => l.lat !== null && l.lon !== null,

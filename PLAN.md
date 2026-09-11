@@ -19,7 +19,7 @@ Turn NYC DOT traffic volume data (2000 to present) into an interactive dashboard
 - [x] Build an initial homepage shell: header, hero, insight cards, footer, all animated.
 - [x] Add MIT LICENSE, README, CONTRIBUTING.md.
 - [x] `git init` and first commit.
-- [ ] Confirm actual network access to `data.cityofnewyork.us` from the real dev machine (it was blocked in the planning sandbox, must be reverified before Phase 1's fetch scripts are trusted to work outside it).
+- [x] Confirm actual network access to `data.cityofnewyork.us` from the real dev machine: confirmed unreachable, not just from the sandbox but from the project owner's own machine and browser too. This is a real network/edge block, not fixable in this codebase (see the Phase 1 note and Open questions below).
 
 ## Phase 1: Data ingestion (ETL) (done)
 
@@ -27,7 +27,9 @@ Turn NYC DOT traffic volume data (2000 to present) into an interactive dashboard
 - Normalized schemas into one shape (`src/lib/types.ts: NormalizedCount`), documented the real field names in `scripts/etl/raw-types.ts`.
 - Raw pulls cache to `data/raw/*.raw.json` (gitignored).
 - Location matching (`scripts/analysis/match-locations.ts`): by segment id first, falling back to street plus cross streets plus direction when segment id is missing, which is common in the historical dataset. This is a heuristic, documented as such in the code, and it can misfire on ambiguous street names.
-- Since `data.cityofnewyork.us` stayed unreachable from this sandbox, added `scripts/etl/generate-sample-data.ts`, a synthetic data generator matching both datasets' real schemas exactly, so the rest of the pipeline could be built and tested against realistic data. It is clearly labeled as synthetic in the code and in its output file's metadata, and the app surfaces a banner whenever it is looking at sample data instead of a real pipeline run.
+- Since `data.cityofnewyork.us` stayed unreachable, confirmed not just from this sandbox but from the project owner's own machine and browser, added `scripts/etl/generate-sample-data.ts`, a synthetic data generator matching both datasets' real schemas exactly, so the rest of the pipeline could be built and tested against realistic data. It is clearly labeled as synthetic in the code and in its output file's metadata.
+- Added a second real-data path for the automated dataset: `scripts/etl/import-automated-csv.ts` reads a manually downloaded CSV copy (for example the Kaggle mirror at `kaggle.com/datasets/aadimator/nyc-automated-traffic-volume-counts`) and converts it into the same raw shape the live fetch would produce, since the block above is domain-specific and other hosts aren't affected. Header matching is alias-based and case/punctuation insensitive rather than assuming exact column names, since a downloaded copy's headers aren't guaranteed to match the API's.
+- `summary.json.meta` tracks `historicalSource` and `automatedSource` separately (`"real"`, `"synthetic"`, or `"missing"`), rather than one combined sample flag, since it's now possible to have real automated data (via the CSV import) alongside still-synthetic historical data (no mirror found for that one yet). The dashboard banner reports both precisely instead of a single "this is fake" or "this is real" statement.
 
 **Known limitation:** the historical dataset does not include coordinates. Locations that only ever appear in the historical dataset (no matching automated segment id) have no lat/long and cannot be placed on the map. They are still counted in the coverage statistics. A real fix would join `Segment ID` against a street centerline dataset (for example NYC's LION dataset) to resolve coordinates, which is out of scope for this build.
 
@@ -66,3 +68,4 @@ Turn NYC DOT traffic volume data (2000 to present) into an interactive dashboard
 - NYC Open Data API rate limits without an app token may slow full historical ingestion. Get a free token early if a real `etl:fetch` run is slow.
 - The `data.cityofnewyork.us` block is confirmed wider than the sandbox: the project owner's own browser, on their own network, also gets a bare 403 from Socrata's edge. A `User-Agent` fix did not help. This needs a different network or VPN to get past, or it needs to wait out whatever is causing it on Socrata's side. Not something to keep trying to fix in code.
 - The historical dataset's lack of coordinates (see Phase 1) means part of the "once a year" story is undercounted on the map specifically, even though it is fully counted in the stats.
+- No mirror found yet for the historical dataset (`btm5-ppia`), unlike the automated one. It stays synthetic even after `etl:import-automated-csv` is used for the automated side. Worth another look if this project keeps going.

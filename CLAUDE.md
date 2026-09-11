@@ -51,7 +51,11 @@ The historical dataset does not include coordinates at all. A location that only
 
 ## Sample data
 
-Since `data.cityofnewyork.us` is unreachable from the sandbox this project was built in, `scripts/etl/generate-sample-data.ts` produces synthetic data matching both real dataset schemas exactly, so the pipeline and dashboard can be built, tested, and demoed honestly. It's deterministic (seeded random), clearly labeled `synthetic: true` in the raw file metadata, and that flag flows through `scripts/build-data.ts` into `summary.json` as `meta.sample`, which is what the dashboard reads to show its sample data banner. Never remove that banner logic without actually wiring up real data first.
+Since `data.cityofnewyork.us` is unreachable, both from the sandbox this project was built in and from the project owner's own network and browser (a confirmed edge level block, not something fixable here), `scripts/etl/generate-sample-data.ts` produces synthetic data matching both real dataset schemas exactly, so the pipeline and dashboard can be built, tested, and demoed honestly. It's deterministic (seeded random), clearly labeled `synthetic: true` in the raw file metadata.
+
+`scripts/build-data.ts` tracks each dataset's status separately as `historicalSource` and `automatedSource` (`"real"`, `"synthetic"`, or `"missing"`) in `summary.json.meta`, rather than one blanket sample flag, because it's possible for one dataset to be real while the other is still synthetic. `SampleDataBanner` reads both and says exactly which is which. Never simplify that back down to a single flag without checking whether a mixed state is still possible.
+
+`scripts/etl/import-automated-csv.ts` is a second way to get real automated data in, for when `data.cityofnewyork.us` is blocked but the same dataset is available somewhere else, for example a Kaggle mirror. It matches CSV headers case and punctuation insensitively against known aliases (see `COLUMN_ALIASES` in that file) rather than assuming an exact header row, since a downloaded copy's exact column names aren't guaranteed to match the live API's. There's no equivalent for the historical dataset yet, no known mirror was found for it.
 
 ## CI and CD
 
@@ -63,9 +67,10 @@ Since `data.cityofnewyork.us` is unreachable from the sandbox this project was b
 
 ```bash
 npm install
-npm run etl:sample      # generate synthetic sample data
-npm run etl:fetch        # or: pull real data (needs network access to data.cityofnewyork.us)
-npm run etl:build       # turn raw data into what the app reads
+npm run etl:sample                    # generate synthetic sample data
+npm run etl:fetch                      # or: pull real data (needs network access to data.cityofnewyork.us)
+npm run etl:import-automated-csv -- <path>  # or: import a manually downloaded copy of the automated dataset
+npm run etl:build                     # turn raw data into what the app reads
 npm run dev              # local dev server at http://localhost:3000
 npm run build            # production build
 npm run lint              # eslint

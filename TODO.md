@@ -12,8 +12,8 @@ Live task tracker for NYC Traffic Watch. Check items off as completed, and keep 
 - [x] README
 - [x] CONTRIBUTING.md
 - [x] `git init`, initial commit
-- [ ] Verify `data.cityofnewyork.us` is reachable from the actual dev environment (it was blocked in the planning sandbox, confirm before relying on live fetches)
-- [ ] Optional: register a free Socrata app token for higher API rate limits
+- [x] Verify `data.cityofnewyork.us` is reachable from the actual dev environment: confirmed not reachable, from the sandbox, the project owner's machine, and the project owner's browser. This is a real network/edge block outside this codebase's control, not a code bug (see CLAUDE.md and PLAN.md)
+- [ ] Optional: register a free Socrata app token for higher API rate limits (moot until the network block above clears)
 
 ## Phase 1: Data ingestion
 
@@ -24,6 +24,8 @@ Live task tracker for NYC Traffic Watch. Check items off as completed, and keep 
 - [x] Define the location-matching/dedup strategy across the two datasets (segment id first, street and cross streets as a fallback, see `scripts/analysis/match-locations.ts`)
 - [x] Local raw-data cache (`data/raw`, gitignored)
 - [x] Synthetic sample data generator so the pipeline works without live API access (`scripts/etl/generate-sample-data.ts`), matching the real schemas
+- [x] CSV importer for the automated dataset (`scripts/etl/import-automated-csv.ts`), for when a mirror of the data exists somewhere other than `data.cityofnewyork.us` (for example Kaggle), with alias-based header matching since a downloaded copy's exact column names aren't guaranteed
+- [x] Per-dataset source tracking (`historicalSource` / `automatedSource` in `summary.json.meta`, each `"real"`, `"synthetic"`, or `"missing"`) instead of one blanket sample flag, so a mix of real and sample data is reported honestly instead of rounded to one or the other
 
 ## Phase 2: Analysis
 
@@ -66,3 +68,4 @@ Live task tracker for NYC Traffic Watch. Check items off as completed, and keep 
 - [ ] Time-range slider (view coverage/deviation by year)
 - [ ] Borough-level rollup stats
 - [ ] Export or share a location's chart
+- [ ] Find a mirror for the historical dataset (`btm5-ppia`) similar to the Kaggle one used for the automated dataset, none found yet, so historical stays synthetic even after `etl:import-automated-csv` is used

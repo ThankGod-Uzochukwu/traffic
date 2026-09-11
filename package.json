@@ -13,6 +13,7 @@
     "test": "vitest run",
     "etl:fetch": "tsx scripts/etl/fetch-historical.ts && tsx scripts/etl/fetch-automated.ts",
     "etl:sample": "tsx scripts/etl/generate-sample-data.ts",
+    "etl:import-automated-csv": "tsx scripts/etl/import-automated-csv.ts",
     "etl:build": "tsx scripts/build-data.ts"
   },
   "dependencies": {
@@ -28,6 +29,7 @@
     "@types/node": "^24.13.4",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "csv-parse": "^7.0.2",
     "eslint": "^9",
     "eslint-config-next": "16.3.4",
     "eslint-config-prettier": "^10.1.8",
