@@ -17,47 +17,48 @@ Live task tracker for NYC Traffic Watch. Check items off as completed, and keep 
 
 ## Phase 1: Data ingestion
 
-- [ ] Fetch script for `btm5-ppia` (Traffic Volume Counts Historical), with pagination
-- [ ] Fetch script for `7ym2-wayt` (Automated Traffic Volume Counts), with pagination
-- [ ] Inspect and document both datasets' actual field schemas
-- [ ] Define a unified location schema (borough, street/segment, lat/long)
-- [ ] Define the location-matching/dedup strategy across the two datasets
-- [ ] Local raw-data cache, to avoid re-fetching during iteration
+- [x] Fetch script for `btm5-ppia` (Traffic Volume Counts Historical), with pagination (`scripts/etl/fetch-historical.ts`, needs to be run from a machine that can reach the API)
+- [x] Fetch script for `7ym2-wayt` (Automated Traffic Volume Counts), with pagination (`scripts/etl/fetch-automated.ts`, same caveat)
+- [x] Document both datasets' actual field schemas (`scripts/etl/raw-types.ts`)
+- [x] Define a unified location schema (borough, street/segment, lat/long) (`src/lib/types.ts`)
+- [x] Define the location-matching/dedup strategy across the two datasets (segment id first, street and cross streets as a fallback, see `scripts/analysis/match-locations.ts`)
+- [x] Local raw-data cache (`data/raw`, gitignored)
+- [x] Synthetic sample data generator so the pipeline works without live API access (`scripts/etl/generate-sample-data.ts`), matching the real schemas
 
 ## Phase 2: Analysis
 
-- [ ] Compute per-location monitoring frequency (count-days/years) and classify it (continuous, annual, sparse, stale)
-- [ ] Compute the citywide expected rush-hour window from aggregate data
-- [ ] Compute per-location actual peak/trough hours and a deviation score vs. the citywide norm
-- [ ] Export the aggregates as JSON for the frontend
+- [x] Compute per-location monitoring frequency (count-days/years) and classify it (continuous, annual, sparse, stale) (`scripts/analysis/coverage.ts`)
+- [x] Compute the citywide expected rush-hour window from aggregate data (`scripts/analysis/deviation.ts`)
+- [x] Compute per-location actual peak/trough hours and a deviation score vs. the citywide norm
+- [x] Export the aggregates as JSON for the frontend (`scripts/build-data.ts` writes `public/data/locations.json` and `public/data/summary.json`)
 
 ## Phase 3: Data layer
 
-- [ ] Decide static JSON vs. API-route data serving
-- [ ] Implement the chosen approach
-- [ ] Data: locations plus coverage classification
-- [ ] Data: per-location hourly time series
-- [ ] Data: deviation scores
+- [x] Decide static JSON vs. API-route data serving: static JSON under `public/data`, read server side with `src/lib/data.ts`, no API routes or database needed
+- [x] Data: locations plus coverage classification
+- [x] Data: per-location hourly time series
+- [x] Data: deviation scores
 
 ## Phase 4: Frontend dashboard
 
-- [ ] Map view (MapLibre GL) with coverage/deviation styling
-- [ ] Location detail panel with an hourly profile chart
-- [ ] Summary/insights view (headline findings, citywide stats)
-- [ ] Responsive and accessible styling pass
+- [x] Map view (MapLibre GL) with coverage/deviation styling
+- [x] Location detail panel with an hourly profile chart
+- [x] Summary/insights view (headline findings, citywide stats)
+- [x] Responsive and accessible styling pass
+- [x] Sample data banner so it is always clear when the dashboard is showing synthetic fixture data instead of a real pipeline run
 
 ## Phase 5: Polish, docs, deploy
 
-- [ ] README: setup, screenshots, data attribution
-- [ ] Choose and configure a deploy target (Vercel or GitHub Pages)
-- [ ] Tests: ETL normalization, deviation-score calculation
-- [ ] Deploy
+- [x] README: setup, ETL usage, data attribution
+- [ ] Choose and configure a deploy target (Vercel or GitHub Pages): left for the project owner, since deploying requires an account this session does not have
+- [x] Tests: ETL normalization, matching, coverage classification, deviation-score calculation
 
 ## Phase 6: Open-source readiness
 
-- [ ] CONTRIBUTING.md finalized
-- [ ] Issue templates
-- [ ] GitHub Actions CI (lint, typecheck, test)
+- [x] CONTRIBUTING.md finalized
+- [x] Issue templates
+- [x] GitHub Actions CI (lint, typecheck, test, build)
+- [x] CODE_OF_CONDUCT.md
 
 ## Backlog / nice to have
 

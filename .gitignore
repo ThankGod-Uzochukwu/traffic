@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# raw ETL pulls (real or synthetic), regenerate with npm run etl:sample or etl:fetch
+/data/raw/

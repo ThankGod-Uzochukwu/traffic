@@ -19,46 +19,50 @@ Turn NYC DOT traffic volume data (2000 to present) into an interactive dashboard
 - [x] Build an initial homepage shell: header, hero, insight cards, footer, all animated.
 - [x] Add MIT LICENSE, README, CONTRIBUTING.md.
 - [x] `git init` and first commit.
-- [ ] Confirm actual network access to `data.cityofnewyork.us` from the real dev machine (it was blocked in the planning sandbox, must be reverified before Phase 1 work is trusted).
+- [ ] Confirm actual network access to `data.cityofnewyork.us` from the real dev machine (it was blocked in the planning sandbox, must be reverified before Phase 1's fetch scripts are trusted to work outside it).
 
-## Phase 1: Data ingestion (ETL)
+## Phase 1: Data ingestion (ETL) (done)
 
-- Fetch scripts for both datasets (`btm5-ppia`, `7ym2-wayt`) with pagination and optional Socrata app-token support.
-- Normalize schemas: unify location identifiers (borough, street/segment, lat/long), date/hour fields, and vehicle-count fields. The two datasets don't share an identical schema.
-- Cache raw pulls locally (JSON files or SQLite) so iteration doesn't repeatedly hit the API.
-- Decide and document how a "location" is matched and deduplicated across the two datasets (segment ID vs. lat/long proximity).
+- Fetch scripts for both datasets (`btm5-ppia`, `7ym2-wayt`) with pagination and optional Socrata app-token support: `scripts/etl/fetch-historical.ts`, `scripts/etl/fetch-automated.ts`.
+- Normalized schemas into one shape (`src/lib/types.ts: NormalizedCount`), documented the real field names in `scripts/etl/raw-types.ts`.
+- Raw pulls cache to `data/raw/*.raw.json` (gitignored).
+- Location matching (`scripts/analysis/match-locations.ts`): by segment id first, falling back to street plus cross streets plus direction when segment id is missing, which is common in the historical dataset. This is a heuristic, documented as such in the code, and it can misfire on ambiguous street names.
+- Since `data.cityofnewyork.us` stayed unreachable from this sandbox, added `scripts/etl/generate-sample-data.ts`, a synthetic data generator matching both datasets' real schemas exactly, so the rest of the pipeline could be built and tested against realistic data. It is clearly labeled as synthetic in the code and in its output file's metadata, and the app surfaces a banner whenever it is looking at sample data instead of a real pipeline run.
 
-## Phase 2: Analysis
+**Known limitation:** the historical dataset does not include coordinates. Locations that only ever appear in the historical dataset (no matching automated segment id) have no lat/long and cannot be placed on the map. They are still counted in the coverage statistics. A real fix would join `Segment ID` against a street centerline dataset (for example NYC's LION dataset) to resolve coordinates, which is out of scope for this build.
 
-- **Monitoring frequency per location:** count distinct count-days and years per location across both datasets, then classify into buckets (continuous/ATR, annual, sparse/once, stale/no recent data).
-- **Rush-hour deviation:** for locations with enough hourly data, compute the actual peak and trough hours, compare against the citywide-aggregate expected rush-hour window, and compute a deviation score.
-- Output both as precomputed JSON aggregates keyed by location. No heavy computation in the browser.
+## Phase 2: Analysis (done)
 
-## Phase 3: Data layer / API
+- Monitoring frequency classification (`scripts/analysis/coverage.ts`): continuous, annual, sparse, or stale, based on count days, distinct years active, and how recent the most recent count is.
+- Citywide expected rush hour and per-location deviation scoring (`scripts/analysis/deviation.ts`): the expected morning and evening peak hours are computed from the busiest hour in a typical commute window across all locations, not hardcoded, and each location gets a 0 to 1 score for how far its actual peak hour is from the nearer of those two.
+- `scripts/build-data.ts` orchestrates normalize, match, and analyze, and writes the aggregates.
 
-- Next.js API routes, or static JSON under `/public/data`, exposing: the locations list, per-location time series, coverage classification, and deviation score.
-- Decide static-at-build vs. on-demand-with-cache based on the actual data volume from Phase 1.
+## Phase 3: Data layer (done)
 
-## Phase 4: Frontend dashboard
+- Static JSON under `public/data/locations.json` and `public/data/summary.json`, read server side in `src/lib/data.ts`. No API routes or database: the data volume is small enough once aggregated, and static files keep the open source deploy free to run.
 
-- Map view (MapLibre GL): color and size locations by monitoring frequency and/or deviation score, click for location detail.
-- Detail panel: hourly volume profile for a selected location vs. the citywide expected curve.
-- Summary/insights view: callouts for the two headline findings, plus citywide stats.
-- Responsive layout, accessible color choices (not solely red/green).
+## Phase 4: Frontend dashboard (done)
+
+- Map view (MapLibre GL, `src/components/dashboard/MapView.tsx`): locations colored by coverage class, sized by how off pattern their rush hour is, click for detail.
+- Detail panel (`src/components/dashboard/LocationPanel.tsx`) with an hourly profile chart against the citywide expected peaks.
+- Charts are a small hand-built SVG bar chart component (`src/components/dashboard/HourlyChart.tsx`) rather than a charting library, to keep the bundle light and the styling fully under control.
+- Summary stats and a legend that pairs color with text and icons, not color alone, for accessibility.
+- A sample-data banner shown whenever `summary.json` reports synthetic data.
 
 ## Phase 5: Polish, docs, deploy
 
-- README with screenshots, setup instructions, and data attribution (NYC DOT / NYC Open Data).
-- Deploy target: Vercel (fits Next.js) or GitHub Pages if the data layer ends up fully static. Decide once Phase 3 is settled.
-- Tests: ETL normalization logic, deviation-score calculation.
+- [x] README covers setup, ETL usage, and data attribution.
+- [x] Tests for normalization, matching, coverage classification, and deviation scoring (Vitest).
+- [ ] Deploy target: Vercel is the natural fit for Next.js. Left for the project owner to actually trigger, since it needs an account and credentials this session does not have.
 
-## Phase 6: Open-source readiness
+## Phase 6: Open-source readiness (done)
 
-- Finalize CONTRIBUTING.md, optional CODE_OF_CONDUCT.md, issue templates.
-- CI (GitHub Actions): lint, typecheck, test on every PR.
+- CONTRIBUTING.md, CODE_OF_CONDUCT.md, issue templates.
+- CI (GitHub Actions): lint, typecheck, test, build on every push and PR.
 
 ## Open questions / risks
 
-- The two-dataset schema mismatch may need a documented location-matching heuristic. Flag early if match quality looks unreliable.
-- NYC Open Data API rate limits without an app token may slow full historical ingestion. Get a free token early if Phase 1 is slow.
+- The location-matching heuristic (segment id, or street plus cross streets as a fallback) can misfire on ambiguous names. Worth revisiting once real data is in, by checking how many locations the fallback path actually creates versus how many should have matched.
+- NYC Open Data API rate limits without an app token may slow full historical ingestion. Get a free token early if a real `etl:fetch` run is slow.
 - The sandbox network block on `data.cityofnewyork.us` must be re-verified from wherever ETL actually runs. Don't assume it's fixed just because a different host worked.
+- The historical dataset's lack of coordinates (see Phase 1) means part of the "once a year" story is undercounted on the map specifically, even though it is fully counted in the stats.

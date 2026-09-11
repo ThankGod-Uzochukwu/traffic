@@ -8,7 +8,12 @@
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "etl:fetch": "tsx scripts/etl/fetch-historical.ts && tsx scripts/etl/fetch-automated.ts",
+    "etl:sample": "tsx scripts/etl/generate-sample-data.ts",
+    "etl:build": "tsx scripts/build-data.ts"
   },
   "dependencies": {
     "framer-motion": "^13.2.0",
@@ -19,7 +24,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
+    "@types/node": "^24.13.4",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
@@ -27,6 +32,8 @@
     "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.9.6",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "tsx": "^4.23.13",
+    "typescript": "^5",
+    "vitest": "^5.0.0"
   }
 }
