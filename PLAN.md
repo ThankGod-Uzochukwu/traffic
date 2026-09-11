@@ -64,5 +64,5 @@ Turn NYC DOT traffic volume data (2000 to present) into an interactive dashboard
 
 - The location-matching heuristic (segment id, or street plus cross streets as a fallback) can misfire on ambiguous names. Worth revisiting once real data is in, by checking how many locations the fallback path actually creates versus how many should have matched.
 - NYC Open Data API rate limits without an app token may slow full historical ingestion. Get a free token early if a real `etl:fetch` run is slow.
-- The sandbox network block on `data.cityofnewyork.us` must be re-verified from wherever ETL actually runs. Don't assume it's fixed just because a different host worked.
+- The `data.cityofnewyork.us` block is confirmed wider than the sandbox: the project owner's own browser, on their own network, also gets a bare 403 from Socrata's edge. A `User-Agent` fix did not help. This needs a different network or VPN to get past, or it needs to wait out whatever is causing it on Socrata's side. Not something to keep trying to fix in code.
 - The historical dataset's lack of coordinates (see Phase 1) means part of the "once a year" story is undercounted on the map specifically, even though it is fully counted in the stats.
