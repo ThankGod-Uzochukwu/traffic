@@ -44,9 +44,13 @@ export interface Location {
   deviationScore: number;
 }
 
+export type SourceStatus = "real" | "synthetic" | "missing";
+
 export interface SummaryMeta {
   sample: boolean;
   generatedAt: string;
+  historicalSource: SourceStatus;
+  automatedSource: SourceStatus;
 }
 
 export interface Summary {

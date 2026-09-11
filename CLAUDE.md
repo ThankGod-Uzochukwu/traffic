@@ -22,7 +22,7 @@ See [PLAN.md](PLAN.md) for the phased build plan and [TODO.md](TODO.md) for the 
 
 Access via the Socrata REST API: `https://data.cityofnewyork.us/resource/<dataset-id>.json`, paginated with `$limit`/`$offset` (add `$$app_token` for higher rate limits; register a free Socrata app token before heavy use).
 
-**Known constraint:** as of this planning session, `data.cityofnewyork.us` returned HTTP 403 to every request from this sandbox's egress IP (confirmed with `curl -v`). General internet access, for example `api.github.com`, worked fine from the same sandbox, so this is host-specific, not a network-wide block. ETL/fetch scripts must be run and verified from an environment with unblocked access (the user's own machine, CI, or the deploy target). Do not treat a 403 here as proof the API is down or the URL is wrong. Re-test from wherever the script actually runs.
+**Known constraint:** `data.cityofnewyork.us` returned HTTP 403 to every request from this sandbox's egress IP (confirmed with `curl -v`), and separately, the project owner confirmed the same URL fails even loading directly in their own browser, on their own network. That rules out this being sandbox-specific or a User-Agent/header issue (a normal browser hitting a bare `403 Forbidden` nginx page, with `X-Socrata-RequestId` present, means Socrata's own edge is rejecting the connection before it reaches the API). This looks like either an IP or region level block on Socrata's side, or a network path issue between the project owner and AWS us-east-1 (where `data.cityofnewyork.us` resolves), not something fixable in this codebase. If you hit this again, try from a different network or a VPN before assuming the fetch scripts are broken. `scripts/etl/socrata-client.ts` sends a normal browser `User-Agent` and includes a response body preview in its error for exactly this kind of diagnosis.
 
 ## Tech stack
 
@@ -51,7 +51,11 @@ The historical dataset does not include coordinates at all. A location that only
 
 ## Sample data
 
-Since `data.cityofnewyork.us` is unreachable from the sandbox this project was built in, `scripts/etl/generate-sample-data.ts` produces synthetic data matching both real dataset schemas exactly, so the pipeline and dashboard can be built, tested, and demoed honestly. It's deterministic (seeded random), clearly labeled `synthetic: true` in the raw file metadata, and that flag flows through `scripts/build-data.ts` into `summary.json` as `meta.sample`, which is what the dashboard reads to show its sample data banner. Never remove that banner logic without actually wiring up real data first.
+Since `data.cityofnewyork.us` is unreachable, both from the sandbox this project was built in and from the project owner's own network and browser (a confirmed edge level block, not something fixable here), `scripts/etl/generate-sample-data.ts` produces synthetic data matching both real dataset schemas exactly, so the pipeline and dashboard can be built, tested, and demoed honestly. It's deterministic (seeded random), clearly labeled `synthetic: true` in the raw file metadata.
+
+`scripts/build-data.ts` tracks each dataset's status separately as `historicalSource` and `automatedSource` (`"real"`, `"synthetic"`, or `"missing"`) in `summary.json.meta`, rather than one blanket sample flag, because it's possible for one dataset to be real while the other is still synthetic. `SampleDataBanner` reads both and says exactly which is which. Never simplify that back down to a single flag without checking whether a mixed state is still possible.
+
+`scripts/etl/import-automated-csv.ts` is a second way to get real automated data in, for when `data.cityofnewyork.us` is blocked but the same dataset is available somewhere else, for example a Kaggle mirror. It matches CSV headers case and punctuation insensitively against known aliases (see `COLUMN_ALIASES` in that file) rather than assuming an exact header row, since a downloaded copy's exact column names aren't guaranteed to match the live API's. There's no equivalent for the historical dataset yet, no known mirror was found for it.
 
 ## CI and CD
 
@@ -63,9 +67,10 @@ Since `data.cityofnewyork.us` is unreachable from the sandbox this project was b
 
 ```bash
 npm install
-npm run etl:sample      # generate synthetic sample data
-npm run etl:fetch        # or: pull real data (needs network access to data.cityofnewyork.us)
-npm run etl:build       # turn raw data into what the app reads
+npm run etl:sample                    # generate synthetic sample data
+npm run etl:fetch                      # or: pull real data (needs network access to data.cityofnewyork.us)
+npm run etl:import-automated-csv -- <path>  # or: import a manually downloaded copy of the automated dataset
+npm run etl:build                     # turn raw data into what the app reads
 npm run dev              # local dev server at http://localhost:3000
 npm run build            # production build
 npm run lint              # eslint

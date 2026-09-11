@@ -15,10 +15,17 @@ npm run etl:build    # turns that raw data into what the app actually reads
 npm run dev
 ```
 
-If you have access to `data.cityofnewyork.us` (it was blocked from the sandbox this project was originally built in, so this was never actually verified end to end), you can pull real data instead:
+If you have access to `data.cityofnewyork.us` (it's been unreachable from every environment tried so far, sandbox, dev machine, and browser, so this was never actually verified end to end), you can pull real data instead:
 
 ```bash
 npm run etl:fetch    # real Socrata pulls, can take a while
+npm run etl:build
+```
+
+If `data.cityofnewyork.us` stays unreachable for you too, there's a fallback for the automated dataset specifically: download a copy from wherever else it's mirrored (for example Kaggle) and import it:
+
+```bash
+npm run etl:import-automated-csv -- path/to/downloaded.csv
 npm run etl:build
 ```
 

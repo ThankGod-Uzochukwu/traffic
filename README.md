@@ -20,7 +20,7 @@ The data comes from two NYC Open Data / NYC DOT datasets:
 - [Traffic Volume Counts (Historical)](https://data.cityofnewyork.us/Transportation/Traffic-Volume-Counts-Historical-/btm5-ppia), which goes back to around 2000 and covers most locations with a single count per year, and does not include coordinates.
 - [Automated Traffic Volume Counts](https://data.cityofnewyork.us/Transportation/Automated-Traffic-Volume-Counts/7ym2-wayt), which covers a smaller set of locations with continuous automated counters, and does include coordinates.
 
-Turning that into what the dashboard reads is a three step pipeline:
+Turning that into what the dashboard reads is a pipeline with a few options for where the raw data comes from:
 
 ```bash
 # Option A: synthetic data, matches the real schemas, works anywhere
@@ -29,11 +29,17 @@ npm run etl:sample
 # Option B: the real thing, needs a machine that can reach data.cityofnewyork.us
 npm run etl:fetch
 
-# Either way, this turns the raw pull into what the app actually reads
+# Option C: import a manually downloaded copy of the automated dataset,
+# for example the Kaggle mirror at kaggle.com/datasets/aadimator/nyc-automated-traffic-volume-counts,
+# useful if data.cityofnewyork.us is unreachable but you can get the file another way
+npm run etl:import-automated-csv -- path/to/downloaded.csv
+
+# Whichever combination you used above, this turns the raw pull into
+# what the app actually reads
 npm run etl:build
 ```
 
-`etl:build` writes `public/data/locations.json` and `public/data/summary.json`. The dashboard reads a `sample: true` flag from that summary and shows a banner whenever it's not looking at a real pipeline run.
+`etl:build` writes `public/data/locations.json` and `public/data/summary.json`. The two datasets are tracked separately, `summary.json.meta.historicalSource` and `automatedSource` are each `"real"`, `"synthetic"`, or `"missing"`, so it's possible to have real automated data and still-synthetic historical data at the same time. The dashboard shows a banner that says exactly which is which whenever either one isn't real.
 
 ## Getting started
 
