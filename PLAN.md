@@ -53,7 +53,7 @@ Turn NYC DOT traffic volume data (2000 to present) into an interactive dashboard
 
 - [x] README covers setup, ETL usage, and data attribution.
 - [x] Tests for normalization, matching, coverage classification, and deviation scoring (Vitest).
-- [ ] Deploy target: Vercel is the natural fit for Next.js. Left for the project owner to actually trigger, since it needs an account and credentials this session does not have.
+- [x] Deploy target: Vercel. `.github/workflows/cd.yml` builds and deploys `main` automatically, but only once `VERCEL_TOKEN`, `VERCEL_ORG_ID`, and `VERCEL_PROJECT_ID` are set as repo secrets. It checks for them first and skips cleanly if they're missing, rather than failing. Setting those secrets, and having a Vercel account to get them from, is left for the project owner (documented in README.md).
 
 ## Phase 6: Open-source readiness (done)
 

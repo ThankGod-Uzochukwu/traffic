@@ -53,6 +53,12 @@ The historical dataset does not include coordinates at all. A location that only
 
 Since `data.cityofnewyork.us` is unreachable from the sandbox this project was built in, `scripts/etl/generate-sample-data.ts` produces synthetic data matching both real dataset schemas exactly, so the pipeline and dashboard can be built, tested, and demoed honestly. It's deterministic (seeded random), clearly labeled `synthetic: true` in the raw file metadata, and that flag flows through `scripts/build-data.ts` into `summary.json` as `meta.sample`, which is what the dashboard reads to show its sample data banner. Never remove that banner logic without actually wiring up real data first.
 
+## CI and CD
+
+`.github/workflows/ci.yml` runs on every push and pull request: lint, format check, typecheck, test, a fresh `etl:sample` plus `etl:build` to prove the pipeline still works, then a build.
+
+`.github/workflows/cd.yml` runs on every push to `main`. It builds with whatever is already committed in `public/data` (it does not regenerate sample data, so a real pipeline run stays deployed once one is committed) and deploys to Vercel. It checks for `VERCEL_TOKEN`, `VERCEL_ORG_ID`, and `VERCEL_PROJECT_ID` as repo secrets first, and skips cleanly instead of failing when they are not set, so forking this repo does not leave a broken workflow. Setting those secrets up is documented in README.md and is left for whoever owns the deploy target, since it needs a Vercel account.
+
 ## Running things
 
 ```bash

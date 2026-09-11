@@ -57,6 +57,20 @@ npm run typecheck        # tsc --noEmit
 npm test                  # vitest
 ```
 
+## Deploying
+
+There are two GitHub Actions workflows in `.github/workflows`:
+
+- `ci.yml` runs on every push and pull request: lint, format check, typecheck, tests, and a build.
+- `cd.yml` deploys `main` to Vercel on every push, but only once the repo has the Vercel secrets set. Without them it skips itself instead of failing, so forking this repo won't leave you with a red X on every commit.
+
+To turn deploys on: create a project on [Vercel](https://vercel.com), then add three repo secrets under Settings, Secrets and variables, Actions:
+
+- `VERCEL_TOKEN`, from your Vercel account settings
+- `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID`, both found in the `.vercel/project.json` file that `vercel link` creates if you link the project locally once
+
+After that, a push to `main` builds and deploys automatically.
+
 ## Stack
 
 Next.js, TypeScript, and Tailwind CSS for the app. Lucide for icons, Framer Motion for animation, MapLibre GL for the map (free basemap tiles, no API key needed). Charts are a small hand built SVG component rather than a charting library. See [CLAUDE.md](CLAUDE.md) for the full rundown, including the exact datasets, the location matching heuristic, and known quirks in the data.
